@@ -8,7 +8,7 @@
 #ifdef NODEBUG
 #define LOG(x)
 #else
-#define LOG(x) std::cout << x << std::endl
+#define LOG(x) std::cout << x 
 #endif
 int randomRange(int min, int max)
 {
@@ -35,7 +35,11 @@ Texture2D loadSprite(const char *path)
     }
     return sprite;
 }
-
+template<typename T>
+void printvector(const std::vector<T>& arr){
+    for(auto &i : arr)LOG((int)i<<" ");
+    LOG("\n");
+}
 // Helper function to load and resize a sprite to a specific size (width and height)
 Texture2D loadSpriteWithSize(const char *fileName, int targetWidth, int targetHeight)
 {

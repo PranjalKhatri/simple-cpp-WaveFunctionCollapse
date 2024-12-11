@@ -18,6 +18,7 @@ struct cell
 };
 struct tile
 {
+    uint8_t idx;
     vector<uint8_t> edges;
     Texture2D tex;
     vector<tile> up, down, left, right;
@@ -25,7 +26,7 @@ struct tile
 
     tile(Texture2D img, vector<uint8_t> edges) : edges(edges), tex(img) {}
 
-    tile(const tile &other) : edges(other.edges)
+    tile(const tile &other) : edges(other.edges), idx(other.idx)
     {
         Image img = LoadImageFromTexture(other.tex);
         tex = LoadTextureFromImage(img);
@@ -38,6 +39,7 @@ struct tile
         {
             UnloadTexture(tex);
             edges = other.edges;
+            idx = other.idx;
             Image img = LoadImageFromTexture(other.tex);
             tex = LoadTextureFromImage(img);
             UnloadImage(img);
@@ -45,7 +47,7 @@ struct tile
         return *this;
     }
 
-    tile(tile &&other) noexcept : edges(std::move(other.edges)), tex(other.tex)
+    tile(tile &&other) noexcept : edges(std::move(other.edges)), idx(other.idx), tex(other.tex)
     {
         other.tex.id = 0; // Nullify the texture ID to prevent double unloading
     }
@@ -57,6 +59,7 @@ struct tile
             UnloadTexture(tex);
             edges = std::move(other.edges);
             tex = other.tex;
+            idx = other.idx;
             other.tex.id = 0;
         }
         return *this;
@@ -82,14 +85,18 @@ struct tile
         return tile(rotatedTexture, rotated);
     }
 
-    void analyze(vector<tile> &tiles)
+    void analyze(const vector<tile> &tiles)
     {
-        for_each(tiles.begin(), tiles.end(), [this](const tile& t)
+        // skips the 0th index
+        for_each(tiles.begin(), tiles.end()-1, [this](const tile &t)
                  {
-                     // up
+                    // if(this->idx == 2){printvector(this->edges);printvector<uint8_t>(t.edges);}
+                    // up
                      if (t.edges[2] == this->edges[0])
                      {
-                         this->up.push_back(t);
+                        // if(this->idx == 1)
+                        //     LOG("matched up with down of "<<(int)t.idx<<" with "<<"\n");
+                        this->up.push_back(t);
                      }
                      // right
                      if (t.edges[3] == this->edges[1])
@@ -105,8 +112,7 @@ struct tile
                      if (t.edges[1] == this->edges[3])
                      {
                          this->left.push_back(t);
-                     }
-                 });
+                     } });
     }
 
     ~tile()
@@ -141,65 +147,100 @@ void logOptions()
             size_t index = i * num_columns + j;     // Calculate the 1D index from 2D coordinates
             LOG((int)grid[index]->options << "\t"); // Log the number of options
         }
-        LOG(""); // Newline at the end of each row
+        LOG("" << std::endl); // Newline at the end of each row
     }
+    LOG("\n");
 }
-
-void propagateConstraints(size_t index, vector<shared_ptr<cell>> &grid)
+// TODO:use a BFS like approach in future
+void propagateConstraints(vector<shared_ptr<cell>> &grid, const vector<tile> &tiles)
 {
-    LOG("Propagating for " << (int)grid[index]->options);
-    size_t row = index / num_columns;
-    size_t col = index % num_columns;
-
-    // Check each direction (LEFT, RIGHT, UP, DOWN)
-    if (col > 0) // Left
+    for (int i = 0; i < num_rows; i++)
     {
-        size_t leftIndex = index - 1;
-        if (!grid[leftIndex]->collapsed)
+        for (int j = 0; j < num_columns; j++)
         {
-            LOG("Left is updated;\nbefore " << (int)grid[leftIndex]->options);
-            grid[leftIndex]->options &= rules[__builtin_ffs(grid[index]->options) - 1][3]; // Apply LEFT direction rules
-            LOG("after " << (int)grid[leftIndex]->options);
-        }
-    }
+            int index = i * num_columns + j;
+            LOG("valid option calulation for "<<index<<"\n");
+            if (grid[index]->collapsed)
+                continue;
 
-    if (col < num_columns - 1) // Right
-    {
-        size_t rightIndex = index + 1;
-        if (!grid[rightIndex]->collapsed)
-        {
-            LOG("Left is updated;\nbefore " << (int)grid[rightIndex]->options);
-            grid[rightIndex]->options &= rules[__builtin_ffs(grid[index]->options) - 1][1]; // Apply RIGHT direction rules
-            LOG("after " << (int)grid[rightIndex]->options);
-        }
-    }
+            uint8_t valid_options = ~0;
 
-    if (row > 0) // Up
-    {
-        size_t upIndex = index - num_columns;
-        if (!grid[upIndex]->collapsed)
-        {
-            LOG("Left is updated;\nbefore " << (int)grid[upIndex]->options);
-            grid[upIndex]->options &= rules[__builtin_ffs(grid[index]->options) - 1][0]; // Apply UP direction rules
-            LOG("after " << (int)grid[upIndex]->options);
-        }
-    }
+            // LOOK UP
+            if (i > 0)
+            {
+                uint8_t up_options{};
+                auto up = grid[index - num_columns];
+                for (uint8_t option = up->options; option; option &= (option - 1))
+                {
+                    int tileIndex = __builtin_ctz(option);
+                    for (auto &t : tiles[tileIndex].down)
+                    {
+                        up_options |= t.idx;
+                    }
+                }
+                valid_options &= up_options;
+            }
+            LOG("valid options after up "<<(int)valid_options<<" ");
+            // LOOK DOWN
+            if (i < num_rows - 1)
+            {
+                uint8_t down_options{};
+                auto down = grid[index + num_columns];
+                for (uint8_t option = down->options; option; option &= (option - 1))
+                {
+                    int tileIndex = __builtin_ctz(option);
+                    for (auto &t : tiles[tileIndex].up)
+                    {
+                        down_options |=t.idx;
+                    }
+                }
+                valid_options &= down_options;
+            }
+            LOG("valid options after down "<<(int)valid_options<<" ");
 
-    if (row < num_rows - 1) // Down
-    {
-        size_t downIndex = index + num_columns;
-        if (!grid[downIndex]->collapsed)
-        {
-            LOG("Left is updated;\nbefore " << (int)grid[downIndex]->options);
-            grid[downIndex]->options &= rules[__builtin_ffs(grid[index]->options) - 1][2]; // Apply DOWN direction rules
-            LOG("after " << (int)grid[downIndex]->options);
+            // LOOK LEFT
+            if (j > 0)
+            {
+                uint8_t left_options{};
+                auto left = grid[index - 1];
+                for (uint8_t option = left->options; option; option &= (option - 1))
+                {
+                    int tileIndex = __builtin_ctz(option);
+                    for (auto &t : tiles[tileIndex].right)
+                    {
+                        left_options |= t.idx;
+                    }
+                }
+                valid_options &= left_options;
+            }
+
+            LOG("valid options after left "<<(int)valid_options<<" ");
+            // LOOK RIGHT
+            if (j < num_columns - 1)
+            {
+                uint8_t right_options{};
+                auto right = grid[index + 1];
+                for (uint8_t option = right->options; option; option &= (option - 1))
+                {
+                    int tileIndex = __builtin_ctz(option);
+                    for (auto &t : tiles[tileIndex].left)
+                    {
+                        right_options |= t.idx;
+                    }
+                }
+                valid_options &= right_options;
+            }
+            LOG("valid options after right "<<(int)valid_options<<"\n");
+
+            // std::cout << "valid options after all " << (int)valid_options << "\n";
+            grid[index]->options = valid_options;
+            grid[index]->collapsed = __builtin_popcount(valid_options) == 1;
         }
     }
     logOptions();
-    LOG("");
 }
 
-void logic()
+void logic(const vector<tile> &tiles)
 {
     std::vector<std::pair<std::shared_ptr<cell>, size_t>> grid_cpy;
 
@@ -238,7 +279,7 @@ void logic()
 
     grid_cpy[stopIndex].first->collapsed = true;
     grid_cpy[stopIndex].first->options = pickRandom(powersOf2);
-    propagateConstraints(grid_cpy[stopIndex].second, grid);
+    propagateConstraints(grid, tiles);
 }
 
 #endif

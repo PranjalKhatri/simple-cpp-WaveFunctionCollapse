@@ -11,12 +11,12 @@ constexpr const size_t screenHeight = 400;
 constexpr const float tex_width = (float)screenWidth / num_columns;
 constexpr const float tex_height = (float)screenHeight / num_rows;
 
+/*
 #define UP 1
 #define RIGHT 2
 #define DOWN 4
 #define LEFT 8
 #define BLANK 16
-
 const int rules[5][4] = {
     // UP
     {
@@ -48,7 +48,7 @@ const int rules[5][4] = {
         {BLANK | RIGHT},
         {BLANK | DOWN},
         {BLANK | LEFT}}};
-
+*/
 #pragma endregion
 
 #endif
