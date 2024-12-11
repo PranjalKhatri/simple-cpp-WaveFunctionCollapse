@@ -16,10 +16,10 @@ SOURCE=$(LOC)\Src
 LINKERFLAGS= -L $(LIBRARY) -lraylib -lopengl32 -lgdi32 -lwinmm
 all:prog
 
-prog:$(BUILD_DIR)\main.o
+prog:$(BUILD_DIR)/main.o $(INCLUDE)/*.h
 	$(CC) -o $(BUILD_DIR)\app.exe $(BUILD_DIR)\main.o $(LINKERFLAGS) 
 
-$(BUILD_DIR)\main.o: $(SOURCE)\main.cpp
+$(BUILD_DIR)/main.o: $(SOURCE)/main.cpp $(INCLUDE)/*.h
 	cd $(BUILD_DIR) && $(CC) $(CPPFLAGS) -I $(INCLUDE)  $(SOURCE)\main.cpp
 	cd $(LOC)
 

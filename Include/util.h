@@ -4,6 +4,7 @@
 #include <random>
 #include <ctime>
 #include <iostream>
+#include"raylib.h"
 #ifdef NODEBUG
 #define LOG(x)
 #else

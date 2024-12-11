@@ -6,15 +6,16 @@
 
 using namespace std;
 
-Texture2D tex_left, tex_right, tex_up, tex_down, tex_blank;
+vector<tile> tiles(5);
 
 void loadCellTexture(int targetWidth, int targetHeight)
-{
-    tex_left = loadSpriteWithSize("images/left.png", targetWidth, targetHeight);
-    tex_right = loadSpriteWithSize("images/right.png", targetWidth, targetHeight);
-    tex_up = loadSpriteWithSize("images/up.png", targetWidth, targetHeight);
-    tex_down = loadSpriteWithSize("images/down.png", targetWidth, targetHeight);
-    tex_blank = loadSpriteWithSize("images/blank.png", targetWidth, targetHeight);
+{    
+    tiles[0] = tile(loadSpriteWithSize("images/blank.png", targetWidth, targetHeight),{0,0,0,0});
+    tiles[1] = tile(loadSpriteWithSize("images/up.png", targetWidth, targetHeight),{1,1,0,1});
+    tiles[2] = tiles[1].rotate(1);
+    tiles[3] = tiles[1].rotate(2);
+    tiles[4] = tiles[1].rotate(3);
+    for(auto &t : tiles)t.analyze(tiles);
 }
 
 void draw()
@@ -29,19 +30,19 @@ void draw()
                 switch (grid[index]->options)
                 {
                 case LEFT:
-                    DrawTexture(tex_left, j * tex_width, i * tex_height, WHITE);
+                    DrawTexture(tiles[4].tex, j * tex_width, i * tex_height, WHITE);
                     break;
                 case RIGHT:
-                    DrawTexture(tex_right, j * tex_width, i * tex_height, WHITE);
+                    DrawTexture(tiles[2].tex, j * tex_width, i * tex_height, WHITE);
                     break;
                 case UP:
-                    DrawTexture(tex_up, j * tex_width, i * tex_height, WHITE);
+                    DrawTexture(tiles[1].tex, j * tex_width, i * tex_height, WHITE);
                     break;
                 case DOWN:
-                    DrawTexture(tex_down, j * tex_width, i * tex_height, WHITE);
+                    DrawTexture(tiles[3].tex, j * tex_width, i * tex_height, WHITE);
                     break;
                 case BLANK:
-                    DrawTexture(tex_blank, j * tex_width, i * tex_height, WHITE);
+                    DrawTexture(tiles[0].tex, j * tex_width, i * tex_height, WHITE);
                     break;
                 }
             }
@@ -84,10 +85,6 @@ int main(void)
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
-    UnloadTexture(tex_left);
-    UnloadTexture(tex_right);
-    UnloadTexture(tex_up);
-    UnloadTexture(tex_down);
     CloseWindow(); // Close window and OpenGL context
     //--------------------------------------------------------------------------------------
 
