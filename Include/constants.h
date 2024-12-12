@@ -3,11 +3,14 @@
 #include <cstddef>
 
 #pragma region constants
-
-constexpr const size_t num_rows = 20;
-constexpr const size_t num_columns = 20;
-constexpr const size_t screenWidth = 400;
-constexpr const size_t screenHeight = 400;
+#define OPSIZE uint64_t
+#define DEFAULT 5
+#define CIRCUIT 38
+#define NUM_OPS DEFAULT
+constexpr const size_t num_rows = 50;
+constexpr const size_t num_columns = 50;
+constexpr const size_t screenWidth = 800;
+constexpr const size_t screenHeight = 800;
 constexpr const float tex_width = (float)screenWidth / num_columns;
 constexpr const float tex_height = (float)screenHeight / num_rows;
 

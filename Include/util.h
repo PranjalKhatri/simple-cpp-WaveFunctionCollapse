@@ -5,6 +5,7 @@
 #include <ctime>
 #include <iostream>
 #include"raylib.h"
+#include"constants.h"
 #ifdef NODEBUG
 #define LOG(x)
 #else

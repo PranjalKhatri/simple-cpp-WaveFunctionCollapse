@@ -4,21 +4,22 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
-#include "constants.h"
-#include "util.h"
 #include <iostream>
 #include <algorithm>
+#include <bitset>
+#include "util.h"
 
-using std::vector, std::shared_ptr, std::make_shared;
+bool applyLogic = true;
+using std::vector, std::shared_ptr, std::make_shared, std::bitset, std::endl, std::cerr;
 
 struct cell
 {
-    bool collapsed;  // whether the cell is currently occupied or not
-    uint8_t options; // number of options this cell has (using bit enum for very small entropies)
+    bool collapsed;          // whether the cell is currently occupied or not
+    bitset<NUM_OPS> options; // number of options this cell has (using bit enum for very small entropies)
 };
 struct tile
 {
-    uint8_t idx;
+    OPSIZE idx;
     vector<uint8_t> edges;
     Texture2D tex;
     vector<tile> up, down, left, right;
@@ -88,7 +89,7 @@ struct tile
     void analyze(const vector<tile> &tiles)
     {
         // skips the 0th index
-        for_each(tiles.begin(), tiles.end()-1, [this](const tile &t)
+        for_each(tiles.begin(), tiles.end(), [this](const tile &t)
                  {
                     // if(this->idx == 2){printvector(this->edges);printvector<uint8_t>(t.edges);}
                     // up
@@ -134,7 +135,7 @@ void initializeGrid()
     {
         grid[i] = make_shared<cell>(); // Create shared pointer for each cell
         grid[i]->collapsed = false;
-        grid[i]->options = 0x1F; // 1111 in binary (all 4 options available)
+        grid[i]->options = ~0; // 1111 in binary (all 4 options available)
     }
 }
 
@@ -144,8 +145,8 @@ void logOptions()
     {
         for (size_t j = 0; j < num_columns; ++j)
         {
-            size_t index = i * num_columns + j;     // Calculate the 1D index from 2D coordinates
-            LOG((int)grid[index]->options << "\t"); // Log the number of options
+            size_t index = i * num_columns + j;            // Calculate the 1D index from 2D coordinates
+            LOG(grid[index]->options.to_string() << "\t"); // Log the number of options
         }
         LOG("" << std::endl); // Newline at the end of each row
     }
@@ -159,82 +160,161 @@ void propagateConstraints(vector<shared_ptr<cell>> &grid, const vector<tile> &ti
         for (int j = 0; j < num_columns; j++)
         {
             int index = i * num_columns + j;
-            LOG("valid option calulation for "<<index<<"\n");
+            // LOG("valid option calulation for "<<index<<"\n");
             if (grid[index]->collapsed)
                 continue;
 
-            uint8_t valid_options = ~0;
-
-            // LOOK UP
+            bitset<NUM_OPS> valid_options = ~0;
             if (i > 0)
             {
-                uint8_t up_options{};
+                std::bitset<NUM_OPS> up_options; // Initialize all bits to 0
                 auto up = grid[index - num_columns];
-                for (uint8_t option = up->options; option; option &= (option - 1))
+                for (size_t tileIndex = up->options._Find_first();
+                     tileIndex < NUM_OPS;
+                     tileIndex = up->options._Find_next(tileIndex))
                 {
-                    int tileIndex = __builtin_ctz(option);
+                    // std::cerr << "accessing tile index " << tileIndex << "\n";
                     for (auto &t : tiles[tileIndex].down)
                     {
-                        up_options |= t.idx;
+                        up_options.set(t.idx); // Set the corresponding valid options
                     }
                 }
-                valid_options &= up_options;
+                valid_options &= up_options; // Intersect with current valid options
             }
-            LOG("valid options after up "<<(int)valid_options<<" ");
+            // LOG("valid options after up " << valid_options.count() << " ");
+
             // LOOK DOWN
             if (i < num_rows - 1)
             {
-                uint8_t down_options{};
+                std::bitset<NUM_OPS> down_options; // Initialize all bits to 0
                 auto down = grid[index + num_columns];
-                for (uint8_t option = down->options; option; option &= (option - 1))
+
+                for (size_t tileIndex = down->options._Find_first();
+                     tileIndex < NUM_OPS;
+                     tileIndex = down->options._Find_next(tileIndex))
                 {
-                    int tileIndex = __builtin_ctz(option);
+                    // std::cerr << "accessing tile index " << tileIndex << "\n";
                     for (auto &t : tiles[tileIndex].up)
                     {
-                        down_options |=t.idx;
+                        down_options.set(t.idx); // Set the corresponding valid options
                     }
                 }
-                valid_options &= down_options;
+                valid_options &= down_options; // Intersect with current valid options
             }
-            LOG("valid options after down "<<(int)valid_options<<" ");
+            // LOG("valid options after down " << valid_options.count() << " ");
 
             // LOOK LEFT
             if (j > 0)
             {
-                uint8_t left_options{};
+                std::bitset<NUM_OPS> left_options; // Initialize all bits to 0
                 auto left = grid[index - 1];
-                for (uint8_t option = left->options; option; option &= (option - 1))
+
+                for (size_t tileIndex = left->options._Find_first();
+                     tileIndex < NUM_OPS;
+                     tileIndex = left->options._Find_next(tileIndex))
                 {
-                    int tileIndex = __builtin_ctz(option);
+                    // std::cerr << "accessing tile index " << tileIndex << "\n";
                     for (auto &t : tiles[tileIndex].right)
                     {
-                        left_options |= t.idx;
+                        left_options.set(t.idx); // Set the corresponding valid options
                     }
                 }
-                valid_options &= left_options;
+                valid_options &= left_options; // Intersect with current valid options
             }
+            // LOG("valid options after left " << valid_options.count() << " ");
 
-            LOG("valid options after left "<<(int)valid_options<<" ");
             // LOOK RIGHT
             if (j < num_columns - 1)
             {
-                uint8_t right_options{};
+                std::bitset<NUM_OPS> right_options; // Initialize all bits to 0
                 auto right = grid[index + 1];
-                for (uint8_t option = right->options; option; option &= (option - 1))
+
+                for (size_t tileIndex = right->options._Find_first();
+                     tileIndex < NUM_OPS;
+                     tileIndex = right->options._Find_next(tileIndex))
                 {
-                    int tileIndex = __builtin_ctz(option);
+                    // std::cerr << "accessing tile index " << tileIndex << "\n";
                     for (auto &t : tiles[tileIndex].left)
                     {
-                        right_options |= t.idx;
+                        right_options.set(t.idx); // Set the corresponding valid options
                     }
                 }
-                valid_options &= right_options;
+                valid_options &= right_options; // Intersect with current valid options
             }
-            LOG("valid options after right "<<(int)valid_options<<"\n");
+            // LOG("valid options after right " << valid_options.count() << " ");
 
+            /*
+                        // LOOK UP
+                        // if (i > 0)
+                        // {
+                        //     bitset<NUM_OPS> up_options{};
+                        //     auto up = grid[index - num_columns];
+
+                        //     for (OPSIZE option = up->options; option; option &= (option - 1))
+                        //     {
+                        //         int tileIndex = __builtin_ctz(option);
+                        //         for (auto &t : tiles[tileIndex].down)
+                        //         {
+                        //             up_options |= t.idx;
+                        //         }
+                        //     }
+                        //     valid_options &= up_options;
+                        // }
+                        // // LOG("valid options after up "<<(int)valid_options<<" ");
+                        // // LOOK DOWN
+                        // if (i < num_rows - 1)
+                        // {
+                        //     OPSIZE down_options{};
+                        //     auto down = grid[index + num_columns];
+                        //     for (OPSIZE option = down->options; option; option &= (option - 1))
+                        //     {
+                        //         int tileIndex = __builtin_ctz(option);
+                        //         for (auto &t : tiles[tileIndex].up)
+                        //         {
+                        //             down_options |= t.idx;
+                        //         }
+                        //     }
+                        //     valid_options &= down_options;
+                        // }
+                        // // LOG("valid options after down "<<(int)valid_options<<" ");
+
+                        // // LOOK LEFT
+                        // if (j > 0)
+                        // {
+                        //     OPSIZE left_options{};
+                        //     auto left = grid[index - 1];
+                        //     for (OPSIZE option = left->options; option; option &= (option - 1))
+                        //     {
+                        //         int tileIndex = __builtin_ctz(option);
+                        //         for (auto &t : tiles[tileIndex].right)
+                        //         {
+                        //             left_options |= t.idx;
+                        //         }
+                        //     }
+                        //     valid_options &= left_options;
+                        // }
+
+                        // // LOG("valid options after left "<<(int)valid_options<<" ");
+                        // // LOOK RIGHT
+                        // if (j < num_columns - 1)
+                        // {
+                        //     OPSIZE right_options{};
+                        //     auto right = grid[index + 1];
+                        //     for (OPSIZE option = right->options; option; option &= (option - 1))
+                        //     {
+                        //         int tileIndex = __builtin_ctz(option);
+                        //         for (auto &t : tiles[tileIndex].left)
+                        //         {
+                        //             right_options |= t.idx;
+                        //         }
+                        //     }
+                        //     valid_options &= right_options;
+                        // }
+                        // LOG("valid options after right "<<(int)valid_options<<"\n");
+            */
             // std::cout << "valid options after all " << (int)valid_options << "\n";
             grid[index]->options = valid_options;
-            grid[index]->collapsed = __builtin_popcount(valid_options) == 1;
+            grid[index]->collapsed = valid_options.count() == 1;
         }
     }
     logOptions();
@@ -250,7 +330,7 @@ void logic(const vector<tile> &tiles)
     }
 
     std::sort(grid_cpy.begin(), grid_cpy.end(), [](const std::pair<std::shared_ptr<cell>, size_t> &a, const std::pair<std::shared_ptr<cell>, size_t> &b)
-              { return __builtin_popcount(a.first->options) < __builtin_popcount(b.first->options); });
+              { return a.first->options.count() < b.first->options.count(); });
 
     size_t stopIndex = -1;
     for (size_t i = 0; i < grid_cpy.size(); ++i)
@@ -265,20 +345,25 @@ void logic(const vector<tile> &tiles)
     if (stopIndex == -1)
         return;
 
-    size_t num = grid_cpy[stopIndex].first->options;
-    vector<int> powersOf2;
+    std::bitset<NUM_OPS> options = grid_cpy[stopIndex].first->options;
+    std::vector<int> indices;
 
-    for (int i = 0; num > 0; ++i)
+    for (size_t i = options._Find_first(); i < NUM_OPS; i = options._Find_next(i))
     {
-        if (num & 1)
-        {
-            powersOf2.push_back(static_cast<int>(1 << i));
-        }
-        num >>= 1;
+        indices.push_back(static_cast<int>(i)); // Store the index of the set bit
     }
 
     grid_cpy[stopIndex].first->collapsed = true;
-    grid_cpy[stopIndex].first->options = pickRandom(powersOf2);
+    try
+    {
+        grid_cpy[stopIndex].first->options = 0;
+        grid_cpy[stopIndex].first->options.set(pickRandom(indices));
+    }
+    catch (...)
+    {
+        applyLogic = false;
+        return;
+    }
     propagateConstraints(grid, tiles);
 }
 
