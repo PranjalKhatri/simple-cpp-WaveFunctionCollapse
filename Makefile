@@ -1,4 +1,5 @@
-#a comment
+#################################
+##NOTE: you should run the executable from parent folder and not builds folder like ./Builds/app.exe 
 LOC=$(shell cd)
 #Compiler
 CC=g++

@@ -1,31 +1,46 @@
-# Wave Function Collapse (WFC)
-![A GIF of the working algorithm](images/gif/WaveFunctionCollapse.gif)
+# Wave Function Collapse (WFC) Algorithm
 
+<img src ="./images/gif/wfc.gif" width ="500px"></img> <img src= "./images/gif/photo-collage.png.png" width="275px"></img>
 ## Overview
-Wave Function Collapse is a procedural content generation algorithm inspired by quantum mechanics. This project implements WFC to generate visually appealing patterns and structures, such as roads, tracks, and terrains, from a set of input tiles.
+The Wave Function Collapse (WFC) algorithm is a procedural content generation technique inspired by quantum mechanics. This project uses WFC to generate visually appealing patterns and structures such as roads, tracks, and terrains, based on a set of input tiles. The goal is to create varied, yet consistent, output by respecting local constraints between adjacent tiles.
 
-### Directory Structure
-Here’s an overview of the project structure:
+## Project Structure
+Here is an overview of the project's directory structure:
 
-```
+```bash
 ├── images          # Generated images or screenshots  
-├── Include         # Header files for the project 
-├── Libs            # External libraries used in the  project (You should compile raylib for your own system by following instructions on their site ) 
-├── Src             # main.cpp  
+├── Include         # Header files for the project
+├── Libs            # External libraries (Raylib, etc.)
+├── Src             # Main source code (main.cpp)
+├── Builds          # Folder where your builds will be stored
 ```
-## Build Instructions[*](#bottom)
-run in terminal in root directory(where makefile is present)
 
-```mingw32-make ``` or ```make```
+## Build Instructions
+To build the project, run the following command in the root directory where the Makefile is located:
+
+```bash
+mingw32-make
+```
+<b>or</b>
+
+```bash
+make
+```
+## Important Notes:
+Make sure to run the executable from the parent folder, not the Builds folder, i.e., use ./Builds/app.exe ; Or you can paste the images folder inside your Builds folder.
+
+You may need to compile external dependencies such as [Raylib](www.raylib.com) for your system. Please follow the instructions provided on the Raylib website for your specific platform.
+Changing the Scene
+The project allows you to modify and explore different scenes. The following images show where you can change the scene and where its definitions are located in the code:
+
+Scene Modification([main.cpp](/Src/main.cpp)):
+        ![main.cpp](/images/gif/main.png) 
+Scene Definitions([constants.h](/Include/constants.h)):
+        ![constants.h](/images/gif/constanth.png)
 ## Contributing
-Contributions are welcome! Feel free to fork the repository, create a branch, and submit a pull request.
+Contributions are welcome! Feel free to fork the repository, create a branch, and submit a pull request. We encourage experimentation, so don't hesitate to modify the rules or try out different kinds of input images.
 
 ## Acknowledgments
-Inspired by <a href = "https://www.youtube.com/watch?v=rI_y2GAlQFM">The Coding Train's</a> explanation of Wave Function Collapse.
+The WFC algorithm is inspired by [The Coding Train's](https://www.youtube.com/@TheCodingTrain) explanation of [Wave Function Collapse](https://www.youtube.com/watch?v=rI_y2GAlQFM).
+Special thanks to Raylib for providing the graphics library.
 
-Thanks to <a href = "https://www.raylib.com/"> Raylib</a> for the graphics library.
-
-P.S.: Feel free to mess around with rules and different kinds of images
-
-<a name="bottom" id="bottom"></a>
-*It may take many tries to generate a compelete image as backtracking is not implemented currently 

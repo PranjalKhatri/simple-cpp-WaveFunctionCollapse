@@ -60,7 +60,7 @@ void loadCellTexture(int targetWidth, int targetHeight, std::vector<tile> &tiles
 
         for (int i = 0; i < 13; ++i)
         {
-            std::std::string file_path = std::std::string(base_path) + "/" + std::to_std::string(i) + ".png";
+            std::string file_path = std::string(base_path) + "/" + std::to_string(i) + ".png";
             tiles[i] = tile(loadSpriteWithSize(file_path.c_str(), targetWidth, targetHeight),
                             split(patterns[i], ' '));
         }
@@ -129,7 +129,7 @@ void loadCellTexture(int targetWidth, int targetHeight, std::vector<tile> &tiles
 
         for (int i = 0; i < 7; ++i)
         {
-            std::std::string file_path = std::std::string(base_path) + std::to_std::string(i) + ".png";
+            std::string file_path = std::string(base_path) + std::to_string(i) + ".png";
             tiles[i] = tile(loadSpriteWithSize(file_path.c_str(), targetWidth, targetHeight),
                             split(patterns[i], ' '));
         }

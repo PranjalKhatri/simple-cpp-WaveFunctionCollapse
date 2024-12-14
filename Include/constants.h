@@ -34,8 +34,8 @@
 #define ROADS 8
 #define OPS_ROADS 5
 
-constexpr const size_t num_rows = 10;
-constexpr const size_t num_columns = 10;
+constexpr const size_t num_rows = 25;
+constexpr const size_t num_columns = 25;
 constexpr const size_t screenWidth = 800;
 constexpr const size_t screenHeight = 800;
 constexpr const float tex_width = (float)screenWidth / num_columns;

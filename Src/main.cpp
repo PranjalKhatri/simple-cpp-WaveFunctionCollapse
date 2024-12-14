@@ -1,6 +1,6 @@
 /*
-NOTE: Change the NUM_OPS in constants.h to the final size of tiles you will be using.
-
+main.cpp
+@Author : Pranjal
 */
 
 #include "../Include/raylib.h"
@@ -8,9 +8,9 @@ NOTE: Change the NUM_OPS in constants.h to the final size of tiles you will be u
 #define NODEBUG
 #include "util.h"
 
-//see constants.h for more options
-#define SCENE ROADS
-#define NUM_OPS OPS_ROADS
+// see constants.h for more options
+#define SCENE CIRCUIT
+#define NUM_OPS OPS_CIRCUIT
 
 #include "model.h"
 #include "cell_texture.h"
