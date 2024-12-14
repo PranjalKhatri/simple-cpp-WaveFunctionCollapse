@@ -3,14 +3,18 @@
 
 #include <random>
 #include <ctime>
+#include <string>
 #include <iostream>
-#include"raylib.h"
-#include"constants.h"
+#include "raylib.h"
+#include "constants.h"
+#include <vector>
+
 #ifdef NODEBUG
 #define LOG(x)
 #else
-#define LOG(x) std::cout << x 
+#define LOG(x) std::cout << x
 #endif
+
 int randomRange(int min, int max)
 {
     return min + rand() % (max - min + 1); // Generate a random number within the specified range
@@ -36,9 +40,12 @@ Texture2D loadSprite(const char *path)
     }
     return sprite;
 }
-template<typename T>
-void printvector(const std::vector<T>& arr){
-    for(auto &i : arr)LOG((int)i<<" ");
+
+template <typename T>
+void printvector(const std::vector<T> &arr)
+{
+    for (auto &i : arr)
+        LOG((int)i << " ");
     LOG("\n");
 }
 // Helper function to load and resize a sprite to a specific size (width and height)
@@ -61,6 +68,21 @@ Texture2D loadSpriteWithSize(const char *fileName, int targetWidth, int targetHe
     UnloadImage(image);
 
     return resizedTexture;
+}
+
+std::vector<std::string> split(const std::string &str, char delimiter)
+{
+    std::vector<std::string> tokens;
+    size_t start = 0, end;
+
+    while ((end = str.find(delimiter, start)) != std::string::npos)
+    {
+        tokens.push_back(str.substr(start, end - start));
+        start = end + 1;
+    }
+
+    tokens.push_back(str.substr(start)); // Add the last token
+    return tokens;
 }
 
 #endif
