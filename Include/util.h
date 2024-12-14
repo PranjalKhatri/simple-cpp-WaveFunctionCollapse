@@ -66,7 +66,10 @@ Texture2D loadSpriteWithSize(const char *fileName, int targetWidth, int targetHe
     // Unload the original texture and image
     UnloadTexture(texture);
     UnloadImage(image);
-
+    if(!resizedTexture.id){
+        std::cerr<<"Unable to load "<<fileName;
+        exit(1);
+    }
     return resizedTexture;
 }
 

@@ -22,7 +22,7 @@ private:
     size_t tile_options;
 
 public:
-    bool applyLogic = true;
+    bool canApplyLogic = true;
 
 private:
     void initializeGrid()
@@ -137,6 +137,7 @@ public:
 
     void initializeModel(const vector<tile> &tiles)
     {
+        canApplyLogic = true;
         initializeGrid(); // all shared pointers are freed automatically
         int idx = randomRange(0, grid.size());
         grid[idx]->collapsed = true;
@@ -184,7 +185,7 @@ public:
 
         if (stopIndex == -1)
         {
-            applyLogic = false;
+            canApplyLogic = false;
             return;
         }
         std::bitset<NUM_OPS> options = grid_cpy[stopIndex].first->options;
