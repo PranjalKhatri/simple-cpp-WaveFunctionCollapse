@@ -33,10 +33,13 @@ You may need to compile external dependencies such as [Raylib](www.raylib.com) f
 Changing the Scene
 The project allows you to modify and explore different scenes. The following images show where you can change the scene and where its definitions are located in the code:
 
+![main.cpp](/images/gif/main.png) 
+
 Scene Modification([main.cpp](/Src/main.cpp)):
-        ![main.cpp](/images/gif/main.png) 
+        
+![constants.h](/images/gif/constanth.png)
+
 Scene Definitions([constants.h](/Include/constants.h)):
-        ![constants.h](/images/gif/constanth.png)
 ## Contributing
 Contributions are welcome! Feel free to fork the repository, create a branch, and submit a pull request. We encourage experimentation, so don't hesitate to modify the rules or try out different kinds of input images.
 
